@@ -1,0 +1,102 @@
+## ===== .NET / C# build output =====
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+*.dll
+*.exe
+*.pdb
+*.cache
+*.suo
+*.user
+*.userprefs
+*.tmp
+*.nupkg
+*.snupkg
+*.nuspec
+*.pack
+*.rptproj.bak
+*.pyc
+*.rsuser
+
+## ===== Visual Studio =====
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.vsconfig
+*.VC.db
+*.VC.VC.opendb
+*.opendb
+*.opendb.journal
+*.opendb.lock
+
+## ===== Visual Studio Code / JetBrains =====
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea/
+*.iml
+
+## ===== NuGet =====
+packages/
+*.nupkg
+*.snupkg
+project.lock.json
+project.fragment.lock.json
+artifacts/
+nuget.config.bak
+
+## ===== Test results =====
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+xunit.runner.json
+*.trx
+*.coverage
+*.coveragexml
+
+## ===== Logs & temp =====
+logs/
+*.log
+log/
+*.sqlite
+*.sqlite-journal
+
+## ===== Secrets & local config (KHÔNG commit thông tin nhạy cảm) =====
+appsettings.*.local.json
+appsettings.Local.json
+.env
+.env.*
+secrets.json
+*.pfx
+*.key
+certificates/
+!*.pfx.example
+
+## ===== Windows / macOS =====
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.DS_Store
+$RECYCLE.BIN/
+
+## ===== Migrations snapshot backups =====
+# (Migrations/*.cs được commit bình thường — chỉ bỏ các file backup)
+*.Designer.cs.bak
+
+## ===== Misc =====
+*.orig
+*.rej
+*~
+#*.swp
+#*#
+.DNTAG
+._*
+
+## ===== Rider / ReSharper =====
+.idea/
+_ReSharper*/
+*.[Rr]e[Ss]harp[Rr]e[Ss]u[l]t

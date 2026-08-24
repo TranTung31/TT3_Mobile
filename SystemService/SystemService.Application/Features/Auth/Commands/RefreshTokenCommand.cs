@@ -2,7 +2,6 @@ using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Shared.Redis.Permissions;
 using Shared.Security;
 using SystemService.Application.Exceptions;
 using SystemService.Application.Models.Auth;
@@ -23,7 +22,6 @@ public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, A
     private readonly IRefreshTokenRepository _refreshTokenRepository;
     private readonly IApplicationUserRoleRepository _userRoleRepository;
     private readonly IRolePermissionRepository _rolePermissionRepository;
-    private readonly IUserPermissionCacheService _userPermissionCacheService;
     private readonly IUnitOfWork _unitOfWork;
     private readonly JwtSettings _jwtSettings;
     private readonly ILogger<RefreshTokenCommandHandler> _logger;
@@ -34,7 +32,6 @@ public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, A
         IRefreshTokenRepository refreshTokenRepository,
         IApplicationUserRoleRepository userRoleRepository,
         IRolePermissionRepository rolePermissionRepository,
-        IUserPermissionCacheService userPermissionCacheService,
         IUnitOfWork unitOfWork,
         IOptions<JwtSettings> jwtSettings,
         ILogger<RefreshTokenCommandHandler> logger)
@@ -44,7 +41,6 @@ public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, A
         _refreshTokenRepository = refreshTokenRepository;
         _userRoleRepository = userRoleRepository;
         _rolePermissionRepository = rolePermissionRepository;
-        _userPermissionCacheService = userPermissionCacheService;
         _unitOfWork = unitOfWork;
         _jwtSettings = jwtSettings.Value;
         _logger = logger;
@@ -66,10 +62,13 @@ public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, A
         if (await _userManager.IsLockedOutAsync(user))
             throw new UnauthorizedException("Tài khoản đã bị khóa.");
 
-        // 3. Phát hành access token mới
-        var token = await _tokenService.CreateTokenAsync(user, cancellationToken);
+        // 3. Load permissions từ DB (để nhúng vào claim của token)
+        var permissions = await LoadUserPermissionsFromDbAsync(user.Id, cancellationToken);
 
-        // 4. Rotate refresh token: thu hồi token cũ, cấp token mới
+        // 4. Phát hành access token mới kèm danh sách permissions
+        var token = await _tokenService.CreateTokenAsync(user, permissions, cancellationToken);
+
+        // 5. Rotate refresh token: thu hồi token cũ, cấp token mới
         var newRefreshToken = RefreshTokenHelper.Generate();
         _refreshTokenRepository.Revoke(stored);
         await _refreshTokenRepository.InsertAsync(new RefreshToken
@@ -81,10 +80,6 @@ public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, A
             CreatedOnUtc = DateTime.UtcNow
         }, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-        // 5. Load permissions + refresh cache Redis
-        var permissions = await LoadUserPermissionsFromDbAsync(user.Id, cancellationToken);
-        //await _userPermissionCacheService.SetPermissionsAsync(user.Id, permissions, cancellationToken: cancellationToken);
 
         // 6. Trả về token mới
         return new AuthTokenResponse

@@ -46,14 +46,12 @@ public record UserUpdateModel : BaseEntityModel<Guid>
 public record ChangePasswordModel
 {
     public string NewPassword { get; set; }
-
     public string OldPassword { get; set; }
 }
 
 public record ChangePasswordByAdminModel
 {
     public string NewPassword { get; set; }
-
     public Guid userId { get; set; }
 }
 

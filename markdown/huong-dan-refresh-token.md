@@ -699,7 +699,7 @@ api.interceptors.response.use(
 | `SystemService.Application/Features/Auth/Commands/RefreshTokenCommand.cs` | **Viết lại** (bỏ Keycloak, trả `AuthTokenResponse`) |
 | `SystemService.Api/Controllers/AuthController.cs` | Đổi kiểu trả về endpoint `refresh` sang `AuthTokenResponse` |
 | `SystemService.Application/Features/Auth/Commands/LogoutCommand.cs` | Thu hồi refresh token trong DB |
-| `SystemService.Application/Features/Auth/Commands/ChangePassword*.cs` | (Khuyến nghị) thu hồi refresh token khi đổi mật khẩu |
+| `SystemService.Application/Features/Users/Commands/ChangePasswordCommand.cs`, `ChangePasswordByAdminCommand.cs` | ✅ Đã implement: `ChangePasswordAsync` / `ResetPasswordAsync` + thu hồi refresh token |
 
 ---
 

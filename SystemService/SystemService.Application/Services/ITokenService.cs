@@ -6,5 +6,9 @@ public record TokenResult(string AccessToken, int ExpiresIn);
 
 public interface ITokenService
 {
-    Task<TokenResult> CreateTokenAsync(ApplicationUser user, CancellationToken cancellationToken = default);
+    /// <summary>
+    /// Tạo access token. Danh sách permission (nếu có) sẽ được nhúng vào claim
+    /// để PermissionAuthorizationHandler check quyền trực tiếp từ token.
+    /// </summary>
+    Task<TokenResult> CreateTokenAsync(ApplicationUser user, IEnumerable<string> permissions = null, CancellationToken cancellationToken = default);
 }

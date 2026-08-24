@@ -40,7 +40,7 @@ public class CreateMenuCommandHandler : IRequestHandler<CreateMenuCommand, Guid>
 
     public async Task<Guid> Handle(CreateMenuCommand request, CancellationToken cancellationToken)
     {
-        
+
         var newMenu = _mapper.Map<ApplicationMenu>(request);
 
         if (request.PermissionNames != null && request.PermissionNames.Count > 0)

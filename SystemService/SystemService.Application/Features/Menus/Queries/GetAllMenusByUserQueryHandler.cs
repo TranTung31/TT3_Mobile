@@ -55,8 +55,6 @@ public class GetAllMenusByUserQueryHandler : IRequestHandler<GetAllMenusUserQuer
             return rootMenus.OrderBy(m => m.Order);
         }
 
-
-
         // Nếu không phải admin, tiếp tục logic lọc 
         var accessibleMenus = FilterMenuTree(rootMenus, userPermissions);
 

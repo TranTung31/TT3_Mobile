@@ -32,8 +32,9 @@ public class UpdateMenuCommandHandler : IRequestHandler<UpdateMenuCommand, bool>
 
     public async Task<bool> Handle(UpdateMenuCommand request, CancellationToken cancellationToken)
     {
-        try {
-           await _unitOfWork.BeginTransactionAsync(cancellationToken);
+        try
+        {
+            await _unitOfWork.BeginTransactionAsync(cancellationToken);
             var menuToUpdate = await _menuRepository.GetByIdWithPermissionsAsync(request.Id) ?? throw new NotFoundException(nameof(ApplicationMenu), request.Id);
             _mapper.Map(request.Model, menuToUpdate);
 
@@ -73,11 +74,10 @@ public class UpdateMenuCommandHandler : IRequestHandler<UpdateMenuCommand, bool>
 
             return true;
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
-            _unitOfWork.RollbackTransactionAsync(cancellationToken);
+            await _unitOfWork.RollbackTransactionAsync(cancellationToken);
             return false;
         }
-
     }
 }

@@ -11,4 +11,5 @@ public static class CustomClaimTypes
     public const string FullName = "full_name";
     public const string Email = "email";
     public const string IsSuperAdmin = "is_super_admin";
+    public const string Permissions = "permissions";
 }

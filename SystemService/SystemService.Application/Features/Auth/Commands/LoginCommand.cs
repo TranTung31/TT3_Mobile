@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Shared.Redis.Permissions;
 using Shared.Security;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -31,7 +30,6 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, AuthTokenRespon
     private readonly IUnitOfWork _unitOfWork;
     private readonly IApplicationUserRoleRepository _applicationUserRoleRepository;
     private readonly IRolePermissionRepository _rolePermissionRepository;
-    private readonly IUserPermissionCacheService _userPermissionCacheService;
     private readonly IRefreshTokenRepository _refreshTokenRepository;
     private readonly JwtSettings _jwtSettings;
     private readonly ILogger<LoginCommandHandler> _logger;
@@ -44,7 +42,6 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, AuthTokenRespon
         IUnitOfWork unitOfWork,
         IApplicationUserRoleRepository applicationUserRoleRepository,
         IRolePermissionRepository rolePermissionRepository,
-        IUserPermissionCacheService userPermissionCacheService,
         IRefreshTokenRepository refreshTokenRepository,
         IOptions<JwtSettings> jwtSettings,
         ILogger<LoginCommandHandler> logger)
@@ -56,7 +53,6 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, AuthTokenRespon
         _unitOfWork = unitOfWork;
         _applicationUserRoleRepository = applicationUserRoleRepository;
         _rolePermissionRepository = rolePermissionRepository;
-        _userPermissionCacheService = userPermissionCacheService;
         _refreshTokenRepository = refreshTokenRepository;
         _jwtSettings = jwtSettings.Value;
         _logger = logger;
@@ -78,12 +74,15 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, AuthTokenRespon
 
         // 3. Kiểm tra tài khoản có bị khóa không
         if (await _userManager.IsLockedOutAsync(user))
-            throw new UnauthorizedException("Tài khoản tạm thời bị khóa do đăng nhập sai nhiều lần.");
+            throw new UnauthorizedException("Tài khoản tạm thời bị khóa, vui lòng liên hệ tới quản trị viên.");
 
-        // 4. Phát hành JWT nội bộ
-        var token = await _tokenService.CreateTokenAsync(user, cancellationToken);
+        // 4. Load permissions từ DB (để nhúng vào claim của token)
+        var permissions = await LoadUserPermissionsFromDbAsync(user.Id, cancellationToken);
 
-        // 4.1 Sinh + lưu refresh token (bảng RefreshToken)
+        // 5. Phát hành JWT nội bộ kèm danh sách permissions
+        var token = await _tokenService.CreateTokenAsync(user, permissions, cancellationToken);
+
+        // 5.1 Sinh + lưu refresh token (bảng RefreshToken)
         var refreshTokenValue = RefreshTokenHelper.Generate();
         await _refreshTokenRepository.InsertAsync(new RefreshToken
         {
@@ -94,9 +93,6 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, AuthTokenRespon
             CreatedOnUtc = DateTime.UtcNow
         }, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-        // 5. Load permissions từ DB rồi cache vào Redis
-        var permissions = await LoadUserPermissionsFromDbAsync(user.Id, cancellationToken);
 
         // 6. Trả về token + thông tin người dùng
         return new AuthTokenResponse

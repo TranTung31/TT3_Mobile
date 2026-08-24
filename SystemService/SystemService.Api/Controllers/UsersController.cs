@@ -3,7 +3,6 @@ using Shared.Security.Authorization;
 using Shared.Security.Permissions;
 using SystemService.Application.Features.Users.Commands;
 using SystemService.Application.Features.Users.Queries;
-using SystemService.Application.Models;
 using SystemService.Application.Models.Common;
 using SystemService.Application.Models.Users;
 
@@ -30,6 +29,7 @@ public class UsersController : BaseApiController
     /// <param name="id">Id user</param>
     /// <returns>Dữ liệu bản ghi</returns>
     [HttpGet("{id:guid}")]
+    [RequiredPermission(CorePermissions.QuanLyHeThong.QuanLyNguoiDung.View)]
     [ProducesResponseType(typeof(ApiResponseModel<UserDetailResponseModel>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponseModel), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetById(Guid id)
@@ -48,6 +48,7 @@ public class UsersController : BaseApiController
     /// <param name="model">Đối tượng</param>
     /// <returns>Id user</returns>
     [HttpPost]
+    [RequiredPermission(CorePermissions.QuanLyHeThong.QuanLyNguoiDung.Create)]
     [ProducesResponseType(typeof(ApiResponseModel<Guid>), StatusCodes.Status201Created)]
     public async Task<IActionResult> CreateUser([FromBody] UserCreateModel model)
     {
@@ -63,6 +64,7 @@ public class UsersController : BaseApiController
     /// <param name="model">Đối tượng</param>
     /// <returns>Thông báo thành công/lỗi</returns>
     [HttpPut("{id:guid}")]
+    [RequiredPermission(CorePermissions.QuanLyHeThong.QuanLyNguoiDung.Edit)]
     [ProducesResponseType(typeof(ApiResponseModel), StatusCodes.Status200OK)]
     public async Task<IActionResult> UpdateUser(Guid id, [FromBody] UserUpdateModel model)
     {
@@ -80,7 +82,6 @@ public class UsersController : BaseApiController
     /// <param name="id">Id user cần xóa</param>
     /// <returns>Thông báo thành công/lỗi</returns>
     [HttpDelete("{id:guid}")]
-    // [Authorize(Roles = "delete-users")]
     [ProducesResponseType(typeof(ApiResponseModel), StatusCodes.Status200OK)]
     public async Task<IActionResult> DeleteUser(Guid id)
     {
@@ -100,7 +101,7 @@ public class UsersController : BaseApiController
     }
 
     [HttpPut("change-password")]
-    //[Authorize]
+    [RequiredPermission(CorePermissions.QuanLyHeThong.QuanLyNguoiDung.Edit)]
     [ProducesResponseType(typeof(ApiResponseModel), StatusCodes.Status200OK)]
     public async Task<IActionResult> changePassword([FromBody] ChangePasswordModel model)
     {
@@ -128,12 +129,5 @@ public class UsersController : BaseApiController
         }
         await Mediator.Send(new ChangeStatusUserCommand(model));
         return Ok(ApiResponseModel.Success("Cập nhật người dùng thành công."));
-    }
-
-    [HttpGet("dropdown")]
-    [ProducesResponseType(typeof(ApiResponseModel<List<OptionModel>>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetDropdownUsers()
-    {
-        return Ok(await Mediator.Send(new GetUserDropdownQuery()));
     }
 }

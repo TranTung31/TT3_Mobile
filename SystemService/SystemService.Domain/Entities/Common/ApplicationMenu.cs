@@ -1,5 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using SystemService.Domain.Entities.Enums;
+﻿using SystemService.Domain.Entities.Enums;
 
 namespace SystemService.Domain.Entities.Common;
 

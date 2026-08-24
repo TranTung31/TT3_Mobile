@@ -42,6 +42,8 @@ public class CurrentUserService : ICurrentUserService
                            ?? string.Empty,
                 FullName = GetClaim(principal, CustomClaimTypes.FullName) ?? string.Empty,
                 DonViId = ParseGuid(GetClaim(principal, CustomClaimTypes.UnitId)),
+                Permissions = principal.FindAll(CustomClaimTypes.Permissions)
+                    .Select(c => c.Value?.Trim() ?? string.Empty).Where(p => !string.IsNullOrWhiteSpace(p)).ToHashSet(StringComparer.OrdinalIgnoreCase).ToList(),
                 IsSuperAdmin = bool.TryParse(GetClaim(principal, CustomClaimTypes.IsSuperAdmin), out var isSuperAdmin) && isSuperAdmin,
                 LinhVucQuanLy = 0
             };

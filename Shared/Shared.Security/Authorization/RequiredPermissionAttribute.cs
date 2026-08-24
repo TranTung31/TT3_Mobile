@@ -2,7 +2,6 @@
 
 namespace Shared.Security.Authorization;
 
-
 public enum LogicalOperator
 {
     And,
@@ -13,11 +12,14 @@ public enum LogicalOperator
 /// Attribute để yêu cầu một quyền cụ thể.
 /// Kế thừa từ AuthorizeAttribute và thiết lập sẵn Policy.
 /// <code>
+/// 
 ///Chỉ cần 1 quyền
 ///- [RequiredPermission("products.view")]
 ///Người dùng phải có CẢ hai quyền: "products.edit" VÀ "products.publish"
+///
 ///- [RequiredPermission(LogicalOperator.And, "products.edit", "products.publish")]
 ///Người dùng chỉ cần có quyền "products.delete" HOẶC "products.archive"
+///
 ///- [RequiredPermission(LogicalOperator.Or, "products.delete", "products.archive")]
 ///</code>
 /// </summary>

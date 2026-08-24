@@ -22,7 +22,10 @@ public class JwtTokenService : ITokenService
         _userManager = userManager;
     }
 
-    public async Task<TokenResult> CreateTokenAsync(ApplicationUser user, CancellationToken cancellationToken = default)
+    public async Task<TokenResult> CreateTokenAsync(
+        ApplicationUser user,
+        IEnumerable<string> permissions = null,
+        CancellationToken cancellationToken = default)
     {
         var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.SecretKey));
         var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
@@ -40,6 +43,15 @@ public class JwtTokenService : ITokenService
         };
         if (user.DonViId.HasValue)
             claims.Add(new(CustomClaimTypes.UnitId, user.DonViId.Value.ToString()));
+
+        // Nhúng danh sách permission vào claim (đã ký bởi SecretKey) để handler
+        // check quyền trực tiếp từ token — không cần Redis / DB ở mỗi request.
+        foreach (var permission in permissions ?? Array.Empty<string>())
+        {
+            if (!string.IsNullOrWhiteSpace(permission))
+                claims.Add(new Claim(CustomClaimTypes.Permissions, permission.Trim()));
+        }
+
         claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
 
         // Đọc từ cấu hình thay vì hardcode 60 phút

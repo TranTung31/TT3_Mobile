@@ -15,6 +15,7 @@ public class GetPageListMenuQueryHandler : IRequestHandler<GetPageListMenuQuery,
 {
     private readonly IApplicationMenuRepository _repository;
     private readonly IMapper _mapper;
+
     public GetPageListMenuQueryHandler(
         IApplicationMenuRepository repository,
         IMapper mapper)
@@ -22,21 +23,18 @@ public class GetPageListMenuQueryHandler : IRequestHandler<GetPageListMenuQuery,
         _repository = repository;
         _mapper = mapper;
     }
+
     public async Task<MenuItemPageModel> Handle(
         GetPageListMenuQuery request,
         CancellationToken cancellationToken)
     {
-        //lấy Menu theo phân trang
         var searchModel = request.SearchModel;
         var pagedEntities = await _repository.SearchAsync(
             searchModel.Keyword,
             searchModel.Page - 1,
             searchModel.PageSize);
 
-        //var fullMunuList = await _repository.GetAllAsync(query => { return query; });
-        //var modelItems = _mapper.Map<IList<MenuItemModel>>(fullMunuList);
-
-        var modelItems = pagedEntities.ToModel<MenuItemModel,ApplicationMenu>(_mapper);
+        var modelItems = pagedEntities.ToModel<MenuItemModel, ApplicationMenu>(_mapper);
 
         return new MenuItemPageModel
         {
@@ -48,6 +46,5 @@ public class GetPageListMenuQueryHandler : IRequestHandler<GetPageListMenuQuery,
                 TotalRecords = pagedEntities.TotalCount,
             }
         };
-
     }
 }

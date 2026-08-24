@@ -40,52 +40,6 @@ public class GetAllMenuTreeQueryHandler : IRequestHandler<GetAllMenuTreeQuery, L
         var lstPermission = _currentUserService.User?.Permissions?.ToList();
         var searchModel = request.SearchModel;
 
-        //IReadOnlyCollection<string> effectivePermissions = null;
-        //var lstPermission = new List<string>();
-
-        //if (userId != null && userId.HasValue)
-        //{
-        //    try
-        //    {
-        //        // Đầu tiên cố gắng lấy permissions từ Redis cache
-        //        effectivePermissions = await _userPermissionCacheService.GetPermissionsAsync(
-        //            userId.Value,
-        //            cancellationToken);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Console.WriteLine($"Có lỗi trong quá trình lấy permission từ Redis. UserId: {userId}. Error: {ex.Message}");
-        //    }
-
-        //    if (effectivePermissions == null)
-        //    {
-        //        // Lấy danh sách quyền từ DB
-        //        var permissions = await LoadUserPermissionsFromDbAsync(userId.Value, cancellationToken);
-        //        if (permissions != null)
-        //        {
-        //            lstPermission = permissions.ToList();
-        //            try
-        //            {
-        //                await _userPermissionCacheService.SetPermissionsAsync(
-        //                    userId.Value,
-        //                    permissions,
-        //                    cancellationToken: cancellationToken);
-        //            }
-        //            catch (Exception ex)
-        //            {
-        //                Console.WriteLine($"Có lỗi trong quá trình lưu permission vào Redis. UserId: {userId}. Error: {ex.Message}");
-        //            }
-        //        }
-        //    } else
-        //    {
-        //        var userPermissions = effectivePermissions
-        //                    .Where(static permission => !string.IsNullOrWhiteSpace(permission))
-        //                    .Select(static permission => permission.Trim())
-        //                    .ToHashSet(StringComparer.OrdinalIgnoreCase);
-        //        lstPermission = userPermissions.ToList();
-        //    }
-        //}
-
         var lstMenu = await _repository.GetLstVerticalOrHorizontalMenu(
                 isHorizontalMenu: searchModel.IsHorizontalMenu,
                 userPermissions: lstPermission,
@@ -99,7 +53,6 @@ public class GetAllMenuTreeQueryHandler : IRequestHandler<GetAllMenuTreeQuery, L
 
         if (searchModel.IsHorizontalMenu == false && searchModel.ParentId != null)
         {
-            //menuItems = menuItems.Where(x => x.ParentId == searchModel.ParentId).ToList();
             menuItems = BuildMenuHierarchy(menuItems, searchModel.ParentId);
         }
 

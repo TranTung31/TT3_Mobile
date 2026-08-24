@@ -22,4 +22,9 @@ public interface IRefreshTokenRepository
     /// Xoá token hết hạn (dọn dẹp định kỳ hoặc gọi lúc refresh).
     /// </summary>
     Task<int> DeleteExpiredAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Xoá các token đã bị thu hồi (revoke) — không dùng được nữa — để tránh bảng RefreshToken phình to.
+    /// </summary>
+    Task<int> DeleteRevokedAsync(CancellationToken cancellationToken = default);
 }

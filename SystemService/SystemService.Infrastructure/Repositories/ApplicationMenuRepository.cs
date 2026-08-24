@@ -12,6 +12,7 @@ public class ApplicationMenuRepository : EfRepository<ApplicationMenu, Guid>, IA
 {
     public ApplicationMenuRepository(SystemDbContext context) : base(context)
     {
+
     }
     public async Task<bool> IsNameUniqueAsync(string name, Guid? parentId = null, Guid? idToIgnore = null, CancellationToken cancellationToken = default)
     {
@@ -44,22 +45,47 @@ public class ApplicationMenuRepository : EfRepository<ApplicationMenu, Guid>, IA
             .ToListAsync(cancellationToken: cancellationToken);
     }
 
-    public async Task<IPagedList<ApplicationMenu>> SearchAsync(string keyword = null, int pageIndex = 0, int pageSize = int.MaxValue, CancellationToken cancellationToken = default)
+    //public async Task<IPagedList<ApplicationMenu>> SearchAsync(string keyword = null, int pageIndex = 0, int pageSize = int.MaxValue, CancellationToken cancellationToken = default)
+    //{
+    //    string sqlQuery = @"
+    //    SELECT * FROM ""ApplicationMenu""
+    //    START WITH ""ParentId"" IS NULL
+    //    CONNECT BY PRIOR ""Id"" = ""ParentId""
+    //    ORDER SIBLINGS BY ""Order""";
+    //    var query = Entities.FromSqlRaw(sqlQuery);
+
+    //    if (!string.IsNullOrWhiteSpace(keyword))
+    //    {
+    //        keyword = keyword.ToLower().Trim();
+    //        query = query.Where(m => m.Name.ToLower().Contains(keyword));
+    //    }    
+
+    //    return await query.ToPagedListAsync(pageIndex, pageSize);
+    //}
+
+    public async Task<IPagedList<ApplicationMenu>> SearchAsync(
+        string keyword = null,
+        int pageIndex = 0,
+        int pageSize = int.MaxValue,
+        CancellationToken cancellationToken = default)
     {
-        string sqlQuery = @"
-        SELECT * FROM ""ApplicationMenu""
-        START WITH ""ParentId"" IS NULL
-        CONNECT BY PRIOR ""Id"" = ""ParentId""
-        ORDER SIBLINGS BY ""Order""";
-        var query = Entities.FromSqlRaw(sqlQuery);
+        var query = Entities.AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(keyword))
         {
-            keyword = keyword.ToLower().Trim();
-            query = query.Where(m => m.Name.ToLower().Contains(keyword));
-        }    
+            keyword = keyword.Trim().ToLower();
 
-        return await query.ToPagedListAsync(pageIndex, pageSize);
+            query = query.Where(x =>
+                x.Name.ToLower().Contains(keyword));
+        }
+
+        query = query
+            .OrderBy(x => x.ParentId)
+            .ThenBy(x => x.Order);
+
+        return await query.ToPagedListAsync(
+            pageIndex,
+            pageSize);
     }
 
     public async Task<List<ApplicationMenu>> GetLstVerticalOrHorizontalMenu(

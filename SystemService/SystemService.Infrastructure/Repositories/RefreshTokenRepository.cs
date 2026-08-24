@@ -31,4 +31,9 @@ public class RefreshTokenRepository : IRefreshTokenRepository
         => _context.Set<RefreshToken>()
             .Where(x => x.ExpiresAtUtc <= DateTime.UtcNow)
             .ExecuteDeleteAsync(cancellationToken);
+
+    public Task<int> DeleteRevokedAsync(CancellationToken cancellationToken = default)
+        => _context.Set<RefreshToken>()
+            .Where(x => x.RevokedAtUtc != null)
+            .ExecuteDeleteAsync(cancellationToken);
 }

@@ -45,7 +45,7 @@ public class MenusController : BaseApiController
         return Ok(menus);
     }
 
-    [HttpGet("user")]
+    [HttpGet("current-user")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAllMenuForUser()
     {

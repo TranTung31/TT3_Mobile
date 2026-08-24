@@ -24,7 +24,11 @@ public class GetAllMenusByUserQueryHandler : IRequestHandler<GetAllMenusUserQuer
     public async Task<IEnumerable<MenuUserModel>> Handle(GetAllMenusUserQuery request, CancellationToken cancellationToken)
     {
         // Lấy thông tin người dùng
-        var userPermissions = new HashSet<string>(_currentUser.User.Permissions);
+        // User có quyền dạng "*.View", còn RequiredPermissions của menu lưu theo nhóm quyền không có hậu tố ".View".
+        // => Chỉ lấy các quyền ".View" và bỏ hậu tố để so khớp với RequiredPermissions của menu (giống cơ chế GetAllMenuTreeQuery).
+        var userPermissions = new HashSet<string>(_currentUser.User.Permissions
+            .Where(p => p.EndsWith(".View"))
+            .Select(p => p[..p.LastIndexOf('.')]));
         var isAdmin = _currentUser.IsSuperAdmin(); // Giả sử IsSuperAdmin trả về bool
 
         // Lấy TẤT CẢ menu cùng với các permission yêu cầu
@@ -47,7 +51,6 @@ public class GetAllMenusByUserQueryHandler : IRequestHandler<GetAllMenusUserQuer
                 rootMenus.Add(menuItem);
             }
         }
-
 
         if (isAdmin)
         {

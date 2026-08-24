@@ -15,6 +15,7 @@ using SystemService.Infrastructure.Persistence.SeedData;
 using SystemService.Infrastructure.Repositories;
 using SystemService.Infrastructure.Services;
 using SystemService.Infrastructure.Settings;
+using SystemService.Infrastructure.Workers;
 
 namespace SystemService.Infrastructure;
 
@@ -27,6 +28,7 @@ public static class DependencyInjection
     {
         services.Configure<KeycloakSettings>(configuration.GetSection("Keycloak"));
         services.Configure<JwtSettings>(configuration.GetSection("JwtSettings"));
+        services.Configure<RefreshTokenCleanupOptions>(configuration.GetSection(RefreshTokenCleanupOptions.SectionName));
 
         // 1. Đăng ký DbContext
         var connectionString = configuration.GetConnectionString("SystemServiceConnection");
@@ -100,6 +102,7 @@ public static class DependencyInjection
 
         //Đăng ký hosted service
         //services.AddHostedService<KeycloakPermissionSyncService>();
+        services.AddHostedService<RefreshTokenCleanupWorker>();
 
         // Đăng ký gRPC Clients
         AppContext.SetSwitch("System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);

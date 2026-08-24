@@ -7,6 +7,7 @@ using SystemService.Domain.Entities.Catalog;
 using SystemService.Domain.Entities.Common;
 using SystemService.Domain.Entities.Users;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 
 namespace SystemService.Infrastructure.Persistence;
 
@@ -32,6 +33,16 @@ public class SystemDbContext : IdentityDbContext<ApplicationUser, Role, Guid>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        // Không sử dụng Claims
+        modelBuilder.Ignore<IdentityUserClaim<Guid>>();
+        modelBuilder.Ignore<IdentityRoleClaim<Guid>>();
+
+        // Không sử dụng External Login
+        modelBuilder.Ignore<IdentityUserLogin<Guid>>();
+
+        // Không sử dụng Identity Token
+        modelBuilder.Ignore<IdentityUserToken<Guid>>();
 
         // Tự động áp dụng tất cả các cấu hình entity (IEntityTypeConfiguration)
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());

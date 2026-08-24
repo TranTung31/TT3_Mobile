@@ -111,6 +111,13 @@ public class PermissionRepository : IPermissionRepository
     {
         await _context.Permissions.AddAsync(entity);
     }
+
+    public Task UpdateAsync(Permission entity)
+    {
+        ArgumentNullException.ThrowIfNull(entity);
+        _context.Permissions.Update(entity);
+        return Task.CompletedTask;
+    }
 }
 
 public class RolePermissionRepository : IRolePermissionRepository

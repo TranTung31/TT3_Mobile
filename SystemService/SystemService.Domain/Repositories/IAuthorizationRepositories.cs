@@ -9,6 +9,8 @@ public interface IPermissionRepository
 
     Task InsertAsync(Permission entity);
 
+    Task UpdateAsync(Permission entity);
+
     /// <summary>
     /// Lấy permission theo tên
     /// </summary>

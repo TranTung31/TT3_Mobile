@@ -4,12 +4,15 @@ using SystemService.Application.Services;
 using SystemService.Domain.Repositories;
 using SystemService.Domain;
 using SystemService.Domain.Entities.Authorization;
+using Microsoft.EntityFrameworkCore;
+using SystemService.Infrastructure.Persistence;
 
 namespace SystemService.Infrastructure.Services;
 
 public class PermissionSyncService : IPermissionSyncService
 {
     private readonly RoleManager<Role> _roleManager;
+    private readonly SystemDbContext _dbContext;
     private readonly IPermissionRepository _permissionRepository;
     private readonly IRolePermissionRepository _rolePermissionRepository;
     private readonly IUnitOfWork _unitOfWork;
@@ -17,12 +20,14 @@ public class PermissionSyncService : IPermissionSyncService
 
     public PermissionSyncService(
         RoleManager<Role> roleManager,
+        SystemDbContext dbContext,
         IPermissionRepository permissionRepository,
         IRolePermissionRepository rolePermissionRepository,
         IUnitOfWork unitOfWork,
         ILogger<PermissionSyncService> logger)
     {
         _roleManager = roleManager;
+        _dbContext = dbContext;
         _permissionRepository = permissionRepository;
         _rolePermissionRepository = rolePermissionRepository;
         _unitOfWork = unitOfWork;
@@ -100,19 +105,40 @@ public class PermissionSyncService : IPermissionSyncService
         var fromCode = PermissionReflectionHelper.GetAll();
         var existing = await _permissionRepository.GetAllActiveAsync(cancellationToken);
 
+        var codePermissionNames = fromCode.Select(p => p.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var deletePermissions = existing.Where(p => !codePermissionNames.Contains(p.Name)).ToList();
+
+        if (deletePermissions.Any())
+        {
+            _dbContext.Permissions.RemoveRange(deletePermissions);
+        }
+
         foreach (var seed in fromCode)
         {
-            if (existing.Any(p => p.Name == seed.Name)) continue;
+            var existingPer = await _permissionRepository.GetByNameAsync(seed.Name, cancellationToken);
 
-            await _permissionRepository.InsertAsync(new Permission
+            if (existingPer != null)
             {
-                Id = Guid.NewGuid(),
-                Name = seed.Name,
-                Description = seed.Description,
-                GroupPath = seed.GroupPath,   // "|" làm separator, khớp GetPermissionsAsTreeFromDbQuery
-                IsActive = true,
-                CreatedOnUtc = DateTime.UtcNow
-            });
+                // Cập nhật description nếu khác
+                if (existingPer.Description != seed.Description || existingPer.GroupPath != string.Join("|", seed.GroupPath))
+                {
+                    existingPer.Description = seed.Description;
+                    existingPer.GroupPath = string.Join("|", seed.GroupPath);
+                    await _permissionRepository.UpdateAsync(existingPer);
+                }
+            }
+            else
+            {
+                await _permissionRepository.InsertAsync(new Permission
+                {
+                    Id = Guid.NewGuid(),
+                    Name = seed.Name,
+                    Description = seed.Description,
+                    GroupPath = seed.GroupPath,   // "|" làm separator, khớp GetPermissionsAsTreeFromDbQuery
+                    IsActive = true,
+                    CreatedOnUtc = DateTime.UtcNow
+                });
+            }
         }
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);

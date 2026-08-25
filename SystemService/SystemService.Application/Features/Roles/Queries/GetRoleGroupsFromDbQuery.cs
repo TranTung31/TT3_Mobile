@@ -20,16 +20,17 @@ public class GetRoleGroupsFromDbQueryHandler
         GetRoleGroupsFromDbQuery request,
         CancellationToken cancellationToken)
     {
-        //var roles = await _roleRepository.GetAllAsync(
-        //    query => query.OrderBy(role => role.Name));
+        // Lấy danh sách role đang hoạt động từ DB và trả về dạng phẳng (flat list)
+        var roles = await _roleRepository.GetAllAsync(
+            query => query.Where(r => r.IsActive)
+                          .OrderBy(role => role.Name),
+            cancellationToken);
 
-        //return [.. roles.Select(role => new RoleItemModel
-        //{
-        //    Id = role.Id,
-        //    Name = role.Name,
-        //    Description = role.Description
-        //})];
-
-        return new List<RoleItemModel>();
+        return [.. roles.Select(role => new RoleItemModel
+        {
+            Id = role.Id,
+            Name = role.Name,
+            Description = role.Description
+        })];
     }
 }

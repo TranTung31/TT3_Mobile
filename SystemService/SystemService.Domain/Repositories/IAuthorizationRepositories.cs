@@ -62,6 +62,13 @@ public interface IRoleRepository
     IQueryable<Role> Table { get; }
 
     /// <summary>
+    /// Lấy danh sách tất cả role (kèm query builder tùy chọn)
+    /// </summary>
+    Task<IList<Role>> GetAllAsync(
+        Func<IQueryable<Role>, IQueryable<Role>>? func = null,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Tìm role theo id
     /// </summary>
     Task<Role?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);

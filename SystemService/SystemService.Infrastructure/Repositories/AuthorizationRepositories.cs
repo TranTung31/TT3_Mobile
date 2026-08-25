@@ -17,6 +17,16 @@ public class RoleRepository : IRoleRepository
 
     public IQueryable<Role> Table => _context.Roles.AsQueryable();
 
+    public async Task<IList<Role>> GetAllAsync(
+        Func<IQueryable<Role>, IQueryable<Role>>? func = null,
+        CancellationToken cancellationToken = default)
+    {
+        var query = Table.AsQueryable();
+        if (func != null)
+            query = func(query);
+        return await query.ToListAsync(cancellationToken);
+    }
+
     public async Task<Role?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await Table.FirstOrDefaultAsync(r => r.Id == id, cancellationToken);

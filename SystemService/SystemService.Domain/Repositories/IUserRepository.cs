@@ -7,6 +7,13 @@ public interface IUserRepository
     IQueryable<ApplicationUser> Table { get; }
 
     /// <summary>
+    /// Lấy danh sách tất cả người dùng (kèm query builder tùy chọn)
+    /// </summary>
+    Task<IList<ApplicationUser>> GetAllAsync(
+        Func<IQueryable<ApplicationUser>, IQueryable<ApplicationUser>>? func = null,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Lấy người dùng theo Id (đã loại trừ người dùng bị xóa mềm)
     /// </summary>
     Task<ApplicationUser?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);

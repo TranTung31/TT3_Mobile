@@ -15,6 +15,17 @@ public class UsersController : BaseApiController
     /// <summary>
     /// Lấy danh sách user có phân trang và tìm kiếm.
     /// </summary>
+    [HttpGet]
+    [ProducesResponseType(typeof(ApiResponseModel<List<UserItemModel>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetLstUsers()
+    {
+        var result = await Mediator.Send(new GetLstUsersQuery());
+        return Ok(ApiResponseModel.Success(result));
+    }
+
+    /// <summary>
+    /// Lấy danh sách user có phân trang và tìm kiếm.
+    /// </summary>
     [HttpPost("search")]
     [ProducesResponseType(typeof(ApiResponseModel<UserListModel>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetUsers([FromBody] UserSearchModel searchModel)

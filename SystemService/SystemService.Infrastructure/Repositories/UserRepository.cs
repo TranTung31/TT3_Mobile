@@ -15,6 +15,16 @@ public class UserRepository : IUserRepository
 
     public IQueryable<ApplicationUser> Table => _context.Users.AsQueryable();
 
+    public async Task<IList<ApplicationUser>> GetAllAsync(
+        Func<IQueryable<ApplicationUser>, IQueryable<ApplicationUser>>? func = null,
+        CancellationToken cancellationToken = default)
+    {
+        var query = Table.AsQueryable();
+        if (func != null)
+            query = func(query);
+        return await query.ToListAsync(cancellationToken);
+    }
+
     public async Task<ApplicationUser?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
         => await Table.FirstOrDefaultAsync(u => u.Id == id && !u.IsDeleted, cancellationToken);
 

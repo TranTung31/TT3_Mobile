@@ -27,6 +27,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Folder Include="Persistence\Configurations\DanhMuc\" />
+	  <Folder Include="Persistence\Configurations\Products\" />
 	  <Folder Include="Workers\" />
 	</ItemGroup>
 

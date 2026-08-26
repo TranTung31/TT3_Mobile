@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using SystemService.Domain.Entities.Enums;
 
 namespace SystemService.Domain.Entities.Catalog;
 

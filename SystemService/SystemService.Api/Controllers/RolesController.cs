@@ -81,6 +81,18 @@ public class RolesController : BaseApiController
     }
 
     /// <summary>
+    /// Lấy danh sách quyền từ DB theo dạng phẳng:
+    /// mỗi permission được gộp vào nhóm cuối (leaf) của GroupPath, không tạo subGroups phân cấp.
+    /// </summary>
+    [HttpGet("permissions-flat-from-db")]
+    [ProducesResponseType(typeof(ApiResponseModel<List<PermissionGroup>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetPermissionsFlatFromDb()
+    {
+        var result = await Mediator.Send(new GetPermissionsFlatFromDbQuery());
+        return Ok(ApiResponseModel.Success(result));
+    }
+
+    /// <summary>
     /// Thêm mới role
     /// </summary>
     /// <param name="model">Đối tượng</param>
